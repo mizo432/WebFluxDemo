@@ -1,172 +1,207 @@
 package com.example.webfluxdemo.configuration;
 
-import com.example.webfluxdemo.handler.ValidationException;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
+import com.example.webfluxdemo.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.support.WebExchangeBindException;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.reactive.server.WebTestClient;
 
-import java.net.URI;
-import java.util.*;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class GlobalExceptionHandlerTest {
 
-    private GlobalExceptionHandler handler;
+    @LocalServerPort
+    private int port;
+
+    private WebTestClient webTestClient;
 
     @BeforeEach
     void setUp() {
-        handler = new GlobalExceptionHandler();
+        webTestClient = WebTestClient.bindToServer()
+                .baseUrl("http://localhost:" + port)
+                .build();
+    }
+
+    private String authHeader() {
+        return "Basic " + java.util.Base64.getEncoder().encodeToString("user:user".getBytes());
     }
 
     @Test
-    void handleValidationErrors_returnsProblemDetailWithFieldErrors() {
-        // Given
-        WebExchangeBindException ex = mock(WebExchangeBindException.class);
-        org.springframework.validation.FieldError fieldError1 = mock(org.springframework.validation.FieldError.class);
-        org.springframework.validation.FieldError fieldError2 = mock(org.springframework.validation.FieldError.class);
+    void createUser_withBlankName_returnsProblemDetailWithValidationErrors() {
+        User user = new User();
+        user.setName("");
+        user.setEmail("test@example.com");
 
-        when(fieldError1.getField()).thenReturn("name");
-        when(fieldError1.getDefaultMessage()).thenReturn("must not be blank");
-        when(fieldError2.getField()).thenReturn("email");
-        when(fieldError2.getDefaultMessage()).thenReturn("must be a valid email");
-        when(ex.getFieldErrors()).thenReturn(List.of(fieldError1, fieldError2));
-
-        // When
-        ResponseEntity<ProblemDetail> response = handler.handleValidationErrors(ex);
-
-        // Then
-        assertNotNull(response);
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-
-        ProblemDetail problem = response.getBody();
-        assertNotNull(problem);
-        assertEquals(URI.create("https://example.com/problems/validation-error"), problem.getType());
-        assertEquals("Validation Failed", problem.getTitle());
-        assertEquals(Integer.valueOf(HttpStatus.BAD_REQUEST.value()), problem.getStatus());
-        assertEquals("Validation failed", problem.getDetail());
-
-        @SuppressWarnings("unchecked")
-        Map<String, String> errors = (Map<String, String>) problem.getProperties().get("errors");
-        assertNotNull(errors);
-        assertEquals("must not be blank", errors.get("name"));
-        assertEquals("must be a valid email", errors.get("email"));
+        webTestClient.post()
+                .uri("/router/api/users")
+                .header("Authorization", authHeader())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(user)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectHeader().contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .expectBody()
+                .jsonPath("$.type").isEqualTo("https://example.com/problems/validation-error")
+                .jsonPath("$.title").isEqualTo("Validation failed")
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.instance").exists()
+                .jsonPath("$.errors.name").isNotEmpty();
     }
 
     @Test
-    void handleResponseStatus_withValidationException_returnsProblemDetailWithErrors() {
-        // Given
-        Map<String, String> validationErrors = new HashMap<>();
-        validationErrors.put("name", "名前は必須です");
-        validationErrors.put("email", "メールは必須です");
+    void createUser_withBlankEmail_returnsProblemDetailWithValidationErrors() {
+        User user = new User();
+        user.setName("John Doe");
+        user.setEmail("");
 
-        ValidationException validationEx = new ValidationException(validationErrors);
-        ResponseStatusException ex = new ResponseStatusException(
-                HttpStatus.BAD_REQUEST, "Validation failed", validationEx);
-
-        // When
-        ResponseEntity<ProblemDetail> response = handler.handleResponseStatus(ex);
-
-        // Then
-        assertNotNull(response);
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-
-        ProblemDetail problem = response.getBody();
-        assertNotNull(problem);
-        assertEquals(URI.create("https://example.com/problems/validation-error"), problem.getType());
-        assertEquals("Validation failed", problem.getTitle());
-        assertEquals(Integer.valueOf(HttpStatus.BAD_REQUEST.value()), problem.getStatus());
-
-        @SuppressWarnings("unchecked")
-        Map<String, String> errors = (Map<String, String>) problem.getProperties().get("errors");
-        assertNotNull(errors);
-        assertEquals("名前は必須です", errors.get("name"));
-        assertEquals("メールは必須です", errors.get("email"));
+        webTestClient.post()
+                .uri("/router/api/users")
+                .header("Authorization", authHeader())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(user)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.type").isEqualTo("https://example.com/problems/validation-error")
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.errors.email").isNotEmpty();
     }
 
     @Test
-    void handleResponseStatus_withoutValidationException_returnsProblemDetailWithoutErrors() {
-        // Given
-        ResponseStatusException ex = new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "User not found");
+    void createUser_withInvalidEmail_returnsProblemDetailWithValidationErrors() {
+        User user = new User();
+        user.setName("John Doe");
+        user.setEmail("not-an-email");
 
-        // When
-        ResponseEntity<ProblemDetail> response = handler.handleResponseStatus(ex);
-
-        // Then
-        assertNotNull(response);
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-
-        ProblemDetail problem = response.getBody();
-        assertNotNull(problem);
-        assertEquals("User not found", problem.getTitle());
-        assertEquals(Integer.valueOf(HttpStatus.NOT_FOUND.value()), problem.getStatus());
-        Map<String, Object> properties = problem.getProperties();
-        assertNull(properties);
+        webTestClient.post()
+                .uri("/router/api/users")
+                .header("Authorization", authHeader())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(user)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.type").isEqualTo("https://example.com/problems/validation-error")
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.errors.email").isNotEmpty();
     }
 
     @Test
-    void handleConstraintViolation_returnsProblemDetailWithPropertyErrors() {
-        // Given
-        ConstraintViolation<?> violation1 = mock(ConstraintViolation.class);
-        ConstraintViolation<?> violation2 = mock(ConstraintViolation.class);
+    void createUser_withBothFieldsBlank_returnsProblemDetailWithMultipleErrors() {
+        User user = new User();
+        user.setName("");
+        user.setEmail("");
 
-        when(violation1.getPropertyPath()).thenReturn(new PropertyPath("name"));
-        when(violation1.getMessage()).thenReturn("must not be blank");
-        when(violation2.getPropertyPath()).thenReturn(new PropertyPath("email"));
-        when(violation2.getMessage()).thenReturn("must be a valid email");
-
-        Set<ConstraintViolation<?>> violations = new HashSet<>();
-        violations.add(violation1);
-        violations.add(violation2);
-
-        ConstraintViolationException ex = new ConstraintViolationException(violations);
-
-        // When
-        ResponseEntity<ProblemDetail> response = handler.handleConstraintViolation(ex);
-
-        // Then
-        assertNotNull(response);
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-
-        ProblemDetail problem = response.getBody();
-        assertNotNull(problem);
-        assertEquals(URI.create("https://example.com/problems/constraint-violation"), problem.getType());
-        assertEquals("Constraint Violation", problem.getTitle());
-        assertEquals(Integer.valueOf(HttpStatus.BAD_REQUEST.value()), problem.getStatus());
-        assertEquals("Constraint violation", problem.getDetail());
-
-        @SuppressWarnings("unchecked")
-        Map<String, String> errors = (Map<String, String>) problem.getProperties().get("errors");
-        assertNotNull(errors);
-        assertEquals("must not be blank", errors.get("name"));
-        assertEquals("must be a valid email", errors.get("email"));
+        webTestClient.post()
+                .uri("/router/api/users")
+                .header("Authorization", authHeader())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(user)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.type").isEqualTo("https://example.com/problems/validation-error")
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.errors.name").isNotEmpty()
+                .jsonPath("$.errors.email").isNotEmpty();
     }
 
-    // Helper class to mock jakarta.validation.Path
-    static class PropertyPath implements jakarta.validation.Path {
-        private final String name;
+    @Test
+    void getUserById_withInvalidId_returnsProblemDetail() {
+        webTestClient.get()
+                .uri("/router/api/users/abc")
+                .header("Authorization", authHeader())
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.type").isEqualTo("https://example.com/problems/error")
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.instance").exists();
+    }
 
-        PropertyPath(String name) {
-            this.name = name;
-        }
+    @Test
+    void getUserById_nonExistent_returnsNotFoundProblemDetail() {
+        webTestClient.get()
+                .uri("/router/api/users/99999")
+                .header("Authorization", authHeader())
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isNotFound();
+    }
 
-        @Override
-        public String toString() {
-            return name;
-        }
+    @Test
+    void updateUser_withBlankName_returnsProblemDetailWithValidationErrors() {
+        User user = new User();
+        user.setName("");
+        user.setEmail("test@example.com");
 
-        @Override
-        public Iterator<jakarta.validation.Path.Node> iterator() {
-            return Collections.emptyIterator();
-        }
+        webTestClient.put()
+                .uri("/router/api/users/99999")
+                .header("Authorization", authHeader())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(user)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.type").isEqualTo("https://example.com/problems/validation-error")
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.errors.name").isNotEmpty();
+    }
+
+    @Test
+    void createUser_withNameTooLong_returnsProblemDetailWithValidationErrors() {
+        User user = new User();
+        user.setName("a".repeat(101));
+        user.setEmail("test@example.com");
+
+        webTestClient.post()
+                .uri("/router/api/users")
+                .header("Authorization", authHeader())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(user)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.type").isEqualTo("https://example.com/problems/validation-error")
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.errors.name").isNotEmpty();
+    }
+
+    @Test
+    void createUser_withEmailTooLong_returnsProblemDetailWithValidationErrors() {
+        User user = new User();
+        user.setName("John Doe");
+        user.setEmail("a".repeat(200) + "@example.com");
+
+        webTestClient.post()
+                .uri("/router/api/users")
+                .header("Authorization", authHeader())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(user)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.type").isEqualTo("https://example.com/problems/validation-error")
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.errors.email").isNotEmpty();
+    }
+
+    @Test
+    void responseContentType_isApplicationProblemJson() {
+        User user = new User();
+        user.setName("");
+        user.setEmail("test@example.com");
+
+        webTestClient.post()
+                .uri("/router/api/users")
+                .header("Authorization", authHeader())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(user)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectHeader().contentType(MediaType.APPLICATION_PROBLEM_JSON);
     }
 }

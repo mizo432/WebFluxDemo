@@ -13,19 +13,37 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+/**
+ * Spring Security configuration for the WebFlux application.
+ * <p>
+ * Configures HTTP Basic authentication with a single user account.
+ * API endpoints require authentication, while static resources and
+ * the error page are publicly accessible. Web page authentication
+ * is controlled by the {@code security.web-auth} property.
+ *
+ * @see SecurityWebFilterChain
+ */
 @Configuration
 @EnableWebFluxSecurity
 public class SecurityConfiguration {
 
+    /** Username for HTTP Basic authentication, read from {@code security.username} property. */
     @Value("${security.username:user}")
     private String username;
 
+    /** Password for HTTP Basic authentication, read from {@code security.password} property. */
     @Value("${security.password:user}")
     private String password;
 
+    /** Whether to require authentication for Web pages, read from {@code security.web-auth} property. */
     @Value("${security.web-auth:false}")
     private boolean webAuth;
 
+    /**
+     * Configures the in-memory user details service with a single user.
+     *
+     * @return a reactive user details service with one configured user having the {@code USER} role
+     */
     @Bean
     public MapReactiveUserDetailsService userDetailsService() {
         PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
@@ -38,6 +56,21 @@ public class SecurityConfiguration {
         );
     }
 
+    /**
+     * Configures the security filter chain for WebFlux.
+     * <p>
+     * Access rules:
+     * <ul>
+     *     <li>Static resources ({@code /css/**}) and error page — public</li>
+     *     <li>API endpoints ({@code /api/**}, {@code /router/api/**}) — authenticated</li>
+     *     <li>Web pages ({@code /users/**}, {@code /router/users/**}) — controlled by {@code webAuth} flag</li>
+     *     <li>BootUI console ({@code /bootui/**}) — public</li>
+     *     <li>All other endpoints — authenticated</li>
+     * </ul>
+     *
+     * @param http the security builder for configuring the filter chain
+     * @return the configured security filter chain
+     */
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
