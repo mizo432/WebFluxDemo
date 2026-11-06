@@ -13,6 +13,7 @@ Spring WebFlux、PostgreSQL R2DBC、Gradle を使用したリアクティブ Web
 - **Gradle 9.8.0** - ビルドツール（Kotlin DSL）
 - **Spring Boot DevTools** - 開発時のホットリロード
 - **BootUI** - 開発者用コンソール（`/bootui/`）
+- **デジタル庁デザインシステム** - WebページのUIデザイン
 - **Java 25**
 
 ## 前提条件
@@ -112,6 +113,15 @@ Flyway がデータベーススキーマを自動的に管理します。マイ�
 Spring WebFlux（R2DBC）環境では Flyway の自動設定が有効にならないため、`FlywayConfiguration.java` で Flyway Bean を手動で定義しています。アプリケーション起動時に、Flyway が未適用のマイグレーションをすべて適用してからリクエストの受け付けを開始します。
 
 新しいマイグレーションを追加する場合は、`src/main/resources/db/migration/` に `V{version}__description.sql` 形式でファイルを作成してください。
+
+## UI デザイン
+
+Webページは[デジタル庁デザインシステム](https://design.digital.go.jp/)に基づいてデザインされています。デジタル庁が公開する日本の行政サービス向けのデザインシステムで、アクセシビリティ、統一感、再現性を重視した設計が特徴です。
+
+- **dads-global.css** - デジタル庁デザインシステムのデザイントークン（カラーパレット、タイポグラフィ、レイアウトなど）
+- **dads-components.css** - プロジェクト固有のコンポーネントスタイル（ボタン、テーブル、フォーム、カードなど）
+
+すべてのThymeleafテンプレートでこれらのCSSを使用しており、デジタル庁デザインシステムのユーティリティクラス（`.dads-u-std-*`、`.dads-u-dsp-*` など）を適用しています。
 
 ## Web ページ（@Controller）
 

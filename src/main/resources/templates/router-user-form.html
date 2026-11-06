@@ -3,108 +3,53 @@
 <head>
     <meta charset="UTF-8"/>
     <title>ユーザーフォーム（RouterFunction）</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        h1 {
-            color: #333;
-        }
-        .form-container {
-            background: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: bold;
-            color: #555;
-        }
-        input[type="text"], input[type="email"] {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        input:focus {
-            outline: none;
-            border-color: #6f42c1;
-            box-shadow: 0 0 0 2px rgba(111,66,193,0.2);
-        }
-        .actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 24px;
-        }
-        .actions button, .actions a {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 16px;
-        }
-        .actions button {
-            background-color: #6f42c1;
-            color: #fff;
-        }
-        .actions a {
-            background-color: #999;
-            color: #fff;
-            display: inline-block;
-        }
-        .badge {
-            display: inline-block;
-            padding: 4px 8px;
-            background-color: #6f42c1;
-            color: #fff;
-            border-radius: 4px;
-            font-size: 12px;
-            margin-left: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/dads-global.css"/>
+    <link rel="stylesheet" href="/css/dads-components.css"/>
 </head>
 <body>
-<h1>
-    <span th:text="${user.id != null} ? 'ユーザーを編集' : 'ユーザーを追加'">ユーザーフォーム</span>
-    <span class="badge">RouterFunction</span>
-</h1>
+<header class="dads-header">
+    <div class="dads-header__inner">
+        <h1 class="dads-header__title dads-u-dsp-03B-130">ユーザー管理</h1>
+    </div>
+</header>
 
-<div class="form-container">
-    <form action="/router/users/submit" method="post">
+<main class="dads-l-container dads-main">
+    <h1 class="dads-u-std-25B-130" style="margin-bottom: 24px;">
+        <span th:text="${user.id != null} ? 'ユーザーを編集' : 'ユーザーを追加'">ユーザーフォーム</span>
+        <span class="dads-badge">RouterFunction</span>
+    </h1>
 
-        <input type="hidden" name="id" th:value="${user.id}"/>
+    <div class="dads-card">
+        <form action="/router/users/submit" method="post">
 
-        <div class="form-group">
-            <label for="name">名前</label>
-            <input type="text" id="name" name="name"
-                   th:value="${user.name}"
-                   required placeholder="名前を入力してください"/>
-        </div>
+            <input type="hidden" name="id" th:value="${user.id}"/>
 
-        <div class="form-group">
-            <label for="email">メール</label>
-            <input type="email" id="email" name="email"
-                   th:value="${user.email}"
-                   required placeholder="メールを入力してください"/>
-        </div>
+            <div class="dads-form-group">
+                <label for="name" class="dads-form-label dads-form-label--required">名前</label>
+                <input type="text" id="name" name="name"
+                       th:value="${user.name}"
+                       class="dads-form-input"
+                       required placeholder="名前を入力してください"/>
+            </div>
 
-        <div class="actions">
-            <button type="submit" th:text="${user.id != null} ? '更新' : '登録'">登録</button>
-            <a href="/router/users">キャンセル</a>
-        </div>
-    </form>
-</div>
+            <div class="dads-form-group">
+                <label for="email" class="dads-form-label dads-form-label--required">メール</label>
+                <input type="email" id="email" name="email"
+                       th:value="${user.email}"
+                       class="dads-form-input"
+                       required placeholder="メールを入力してください"/>
+            </div>
+
+            <div class="dads-actions dads-actions--right">
+                <a href="/router/users" class="dads-btn dads-btn--secondary">キャンセル</a>
+                <button type="submit" class="dads-btn dads-btn--primary" th:text="${user.id != null} ? '更新' : '登録'">登録</button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<footer class="dads-footer">
+    <p class="dads-u-std-14N-150">WebFluxDemo - デジタル庁デザインシステム</p>
+</footer>
 </body>
 </html>

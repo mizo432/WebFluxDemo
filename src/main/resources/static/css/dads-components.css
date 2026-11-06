@@ -1,0 +1,248 @@
+/* デジタル庁デザインシステムに基づくコンポーネントスタイル */
+
+/* レイアウトコンテナ */
+.dads-l-container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* ヘッダー */
+.dads-header {
+  background-color: var(--color-neutral-white);
+  border-bottom: 1px solid var(--color-neutral-solid-gray-300);
+  padding: 16px 0;
+  margin-bottom: 32px;
+}
+
+.dads-header__inner {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dads-header__title {
+  margin: 0;
+}
+
+/* ページヘッダー */
+.dads-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--color-neutral-solid-gray-900);
+}
+
+.dads-page-header__title {
+  margin: 0;
+}
+
+/* カード */
+.dads-card {
+  background-color: var(--color-neutral-white);
+  border: 1px solid var(--color-neutral-solid-gray-300);
+  border-radius: 4px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+/* ボタン */
+.dads-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 24px;
+  font-family: var(--font-family-sans);
+  font-size: calc(17 / 16 * 1rem);
+  line-height: 1.7;
+  font-weight: normal;
+  text-decoration: none;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: transparent;
+  color: var(--color-neutral-solid-gray-900);
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.dads-btn:focus-visible {
+  outline: 3px solid var(--color-key-500);
+  outline-offset: 2px;
+}
+
+.dads-btn--primary {
+  background-color: var(--color-key-500);
+  color: var(--color-neutral-white);
+  border-color: var(--color-key-500);
+}
+
+.dads-btn--primary:hover {
+  background-color: var(--color-key-600);
+  border-color: var(--color-key-600);
+}
+
+.dads-btn--secondary {
+  background-color: var(--color-neutral-white);
+  color: var(--color-neutral-solid-gray-900);
+  border-color: var(--color-neutral-solid-gray-500);
+}
+
+.dads-btn--secondary:hover {
+  background-color: var(--color-neutral-solid-gray-100);
+}
+
+.dads-btn--danger {
+  background-color: var(--color-primitive-red-500);
+  color: var(--color-neutral-white);
+  border-color: var(--color-primitive-red-500);
+}
+
+.dads-btn--danger:hover {
+  background-color: var(--color-primitive-red-600);
+  border-color: var(--color-primitive-red-600);
+}
+
+.dads-btn--small {
+  padding: 6px 12px;
+  font-size: calc(14 / 16 * 1rem);
+}
+
+/* テーブル */
+.dads-table-wrapper {
+  overflow-x: auto;
+}
+
+.dads-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: calc(17 / 16 * 1rem);
+}
+
+.dads-table th,
+.dads-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-neutral-solid-gray-300);
+}
+
+.dads-table thead th {
+  background-color: var(--color-neutral-solid-gray-100);
+  color: var(--color-neutral-solid-gray-900);
+  font-weight: bold;
+  border-bottom: 2px solid var(--color-neutral-solid-gray-500);
+}
+
+.dads-table tbody tr:hover {
+  background-color: var(--color-neutral-solid-gray-50);
+}
+
+/* フォーム */
+.dads-form-group {
+  margin-bottom: 24px;
+}
+
+.dads-form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: calc(17 / 16 * 1rem);
+  line-height: 1.7;
+  color: var(--color-neutral-solid-gray-900);
+}
+
+.dads-form-label--required::after {
+  content: " *";
+  color: var(--color-primitive-red-500);
+}
+
+.dads-form-input {
+  width: 100%;
+  padding: 10px 12px;
+  font-family: var(--font-family-sans);
+  font-size: calc(17 / 16 * 1rem);
+  line-height: 1.7;
+  color: var(--color-neutral-solid-gray-900);
+  background-color: var(--color-neutral-white);
+  border: 1px solid var(--color-neutral-solid-gray-500);
+  border-radius: 4px;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.dads-form-input:focus {
+  outline: none;
+  border-color: var(--color-key-500);
+  box-shadow: 0 0 0 2px var(--color-key-50);
+}
+
+.dads-form-input::placeholder {
+  color: var(--color-neutral-solid-gray-500);
+}
+
+.dads-form-error {
+  color: var(--color-primitive-red-500);
+  font-size: calc(14 / 16 * 1rem);
+  margin-top: 4px;
+}
+
+/* バッジ */
+.dads-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: calc(12 / 16 * 1rem);
+  line-height: 1.5;
+  border-radius: 4px;
+  background-color: var(--color-key-500);
+  color: var(--color-neutral-white);
+  vertical-align: middle;
+  margin-left: 8px;
+}
+
+/* 空の状態 */
+.dads-empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--color-neutral-solid-gray-500);
+}
+
+/* アクショングループ */
+.dads-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.dads-actions--right {
+  justify-content: flex-end;
+}
+
+/* メインコンテンツ */
+.dads-main {
+  padding: 32px 0;
+}
+
+/* リンク */
+.dads-link {
+  color: var(--color-key-500);
+  text-decoration: underline;
+  transition: color 0.15s;
+}
+
+.dads-link:hover {
+  color: var(--color-key-600);
+}
+
+/* フッター */
+.dads-footer {
+  background-color: var(--color-neutral-solid-gray-100);
+  border-top: 1px solid var(--color-neutral-solid-gray-300);
+  padding: 16px 0;
+  margin-top: 48px;
+  text-align: center;
+  color: var(--color-neutral-solid-gray-500);
+  font-size: calc(14 / 16 * 1rem);
+}
