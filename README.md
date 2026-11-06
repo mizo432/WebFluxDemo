@@ -12,6 +12,7 @@ Spring WebFlux、PostgreSQL R2DBC、Gradle を使用したリアクティブ Web
 - **PostgreSQL** - データベース（`r2dbc-postgresql` ドライバー使用）
 - **Gradle 9.8.0** - ビルドツール（Kotlin DSL）
 - **Spring Boot DevTools** - 開発時のホットリロード
+- **BootUI** - 開発者用コンソール（`/bootui/`）
 - **Java 25**
 
 ## 前提条件
@@ -42,6 +43,12 @@ docker compose up -d
 Spring Boot DevTools が開発用依存関係として設定されています。開発中に Java コードや Thymeleaf テンプレートを修正すると、アプリケーションが自動的に再起動し、ブラウザのリフレッシュで変更が反映されます。
 
 DevTools は `developmentOnly` スコープで追加されているため、本番環境では自動的に無効化されます。
+
+### BootUI（開発者用コンソール）
+
+BootUI が開発用依存関係として設定されています。アプリケーション起動中に `http://localhost:8080/bootui/` にアクセスすると、ランタイムの可観測性パネル（ヘルスチェック、メトリクス、メモリ、スレッド、ヒープダンプ、起動時間、JVM サイズなど）を確認できます。
+
+BootUI は `developmentOnly` スコープで追加されているため、本番環境では自動的に無効化されます。
 
 ### Java 25 の Netty 警告について
 
@@ -100,7 +107,11 @@ spring:
 
 ## データベースマイグレーション
 
-Flyway がデータベーススキーマを自動的に管理します。マイグレーションファイルは `src/main/resources/db/migration/` に配置されています。アプリケーション起動時に、Flyway が未適用のマイグレーションをすべて適用してからリクエストの受け付けを開始します。
+Flyway がデータベーススキーマを自動的に管理します。マイグレーションファイルは `src/main/resources/db/migration/` に配置されています。
+
+Spring WebFlux（R2DBC）環境では Flyway の自動設定が有効にならないため、`FlywayConfiguration.java` で Flyway Bean を手動で定義しています。アプリケーション起動時に、Flyway が未適用のマイグレーションをすべて適用してからリクエストの受け付けを開始します。
+
+新しいマイグレーションを追加する場合は、`src/main/resources/db/migration/` に `V{version}__description.sql` 形式でファイルを作成してください。
 
 ## Web ページ（@Controller）
 

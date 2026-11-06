@@ -24,6 +24,7 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
+    developmentOnly("com.julien-dubois.bootui:bootui-spring-boot-starter-reactive:1.19.0")
     runtimeOnly("org.postgresql:r2dbc-postgresql")
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.2.19.Final:osx-aarch_64")
