@@ -6,13 +6,14 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.regex.Pattern;
 
 @Component
 public class UserHandler {
@@ -20,6 +21,8 @@ public class UserHandler {
     private final UserRepository userRepository;
 
     private static final int DEFAULT_PAGE_SIZE = 10;
+    private static final int MAX_PAGE_SIZE = 100;
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
 
     public UserHandler(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -44,7 +47,14 @@ public class UserHandler {
     }
 
     public Mono<ServerResponse> createUser(ServerRequest request) {
-        Mono<User> user = request.bodyToMono(User.class);
+        Mono<User> user = request.bodyToMono(User.class).flatMap(u -> {
+            Map<String, String> errors = validateUser(u, null);
+            if (!errors.isEmpty()) {
+                return Mono.error(new ResponseStatusException(
+                        org.springframework.http.HttpStatus.BAD_REQUEST, "Validation failed", new ValidationException(errors)));
+            }
+            return Mono.just(u);
+        });
         return ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(user.flatMap(userRepository::save), User.class);
@@ -52,11 +62,15 @@ public class UserHandler {
 
     public Mono<ServerResponse> updateUser(ServerRequest request) {
         Long id = pathToLong(request, "id");
-        Mono<User> user = request.bodyToMono(User.class)
-                .map(u -> {
-                    u.setId(id);
-                    return u;
-                });
+        Mono<User> user = request.bodyToMono(User.class).flatMap(u -> {
+            u.setId(id);
+            Map<String, String> errors = validateUser(u, id);
+            if (!errors.isEmpty()) {
+                return Mono.error(new ResponseStatusException(
+                        org.springframework.http.HttpStatus.BAD_REQUEST, "Validation failed", new ValidationException(errors)));
+            }
+            return Mono.just(u);
+        });
         return ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(user.flatMap(userRepository::save), User.class);
@@ -73,8 +87,8 @@ public class UserHandler {
     // ---------- Web (HTML / Thymeleaf) ----------
 
     public Mono<ServerResponse> listUsers(ServerRequest request) {
-        int page = request.queryParam("page").map(Integer::parseInt).orElse(0);
-        int size = request.queryParam("size").map(Integer::parseInt).orElse(DEFAULT_PAGE_SIZE);
+        int page = parsePageParam(request.queryParam("page"));
+        int size = parseSizeParam(request.queryParam("size"));
         int skip = page * size;
 
         Mono<Long> totalMono = userRepository.countAll();
@@ -100,8 +114,8 @@ public class UserHandler {
 
     // htmx で部分的にリフレッシュするためのエンドポイント
     public Mono<ServerResponse> listUsersFragment(ServerRequest request) {
-        int page = request.queryParam("page").map(Integer::parseInt).orElse(0);
-        int size = request.queryParam("size").map(Integer::parseInt).orElse(DEFAULT_PAGE_SIZE);
+        int page = parsePageParam(request.queryParam("page"));
+        int size = parseSizeParam(request.queryParam("size"));
         int skip = page * size;
 
         Mono<Long> totalMono = userRepository.countAll();
@@ -133,10 +147,13 @@ public class UserHandler {
 
     public Mono<ServerResponse> showEditForm(ServerRequest request) {
         Long id = pathToLong(request, "id");
-        Mono<User> user = userRepository.findById(id);
-        return ServerResponse.ok()
-                .contentType(MediaType.TEXT_HTML)
-                .render("router-user-form", Map.of("user", user));
+        return userRepository.findById(id)
+                .flatMap(user -> ServerResponse.ok()
+                        .contentType(MediaType.TEXT_HTML)
+                        .render("router-user-form", Map.of("user", user)))
+                .switchIfEmpty(ServerResponse.status(302)
+                        .header("Location", "/router/users")
+                        .build());
     }
 
     public Mono<ServerResponse> submitForm(ServerRequest request) {
@@ -179,7 +196,7 @@ public class UserHandler {
                                 "emailError", "メールは200文字以内で指定してください"
                         ));
             }
-            if (!email.contains("@")) {
+            if (!EMAIL_PATTERN.matcher(email).matches()) {
                 return ServerResponse.badRequest()
                         .contentType(MediaType.TEXT_HTML)
                         .render("router-user-form", Map.of(
@@ -225,5 +242,40 @@ public class UserHandler {
         } catch (NumberFormatException e) {
             throw new ServerWebInputException("Invalid path variable: " + name);
         }
+    }
+
+    private static int parsePageParam(java.util.Optional<String> param) {
+        try {
+            int page = param.map(Integer::parseInt).orElse(0);
+            return Math.max(0, page);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private static int parseSizeParam(java.util.Optional<String> param) {
+        try {
+            int size = param.map(Integer::parseInt).orElse(DEFAULT_PAGE_SIZE);
+            return Math.min(MAX_PAGE_SIZE, Math.max(1, size));
+        } catch (NumberFormatException e) {
+            return DEFAULT_PAGE_SIZE;
+        }
+    }
+
+    private Map<String, String> validateUser(User user, Long id) {
+        Map<String, String> errors = new HashMap<>();
+        if (user.getName() == null || user.getName().isBlank()) {
+            errors.put("name", "名前は必須です");
+        } else if (user.getName().length() > 100) {
+            errors.put("name", "名前は100文字以内で指定してください");
+        }
+        if (user.getEmail() == null || user.getEmail().isBlank()) {
+            errors.put("email", "メールは必須です");
+        } else if (user.getEmail().length() > 200) {
+            errors.put("email", "メールは200文字以内で指定してください");
+        } else if (!EMAIL_PATTERN.matcher(user.getEmail()).matches()) {
+            errors.put("email", "正しいメールアドレスを指定してください");
+        }
+        return errors;
     }
 }

@@ -30,7 +30,7 @@
                 <td>
                     <div class="dads-table-actions">
                         <a th:href="'/router/users/edit/' + ${user.id}" class="dads-btn dads-btn--secondary dads-btn--small">編集</a>
-                        <form action="/router/users/delete" method="post" style="margin: 0;">
+                        <form action="/router/users/delete" method="post" class="dads-form-delete">
                             <input type="hidden" name="_csrf" th:if="${_csrf}" th:value="${_csrf.token}"/>
                             <input type="hidden" name="id" th:value="${user.id}"/>
                             <button type="submit" class="dads-btn dads-btn--danger dads-btn--small" onclick="return confirm('本当に削除しますか？')">削除</button>

@@ -5,7 +5,7 @@
     <title>ユーザー一覧</title>
     <link rel="stylesheet" href="/css/dads-global.css"/>
     <link rel="stylesheet" href="/css/dads-components.css"/>
-    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-U2rRHV3mBlYihU2Xw9RvLAayrnnYAw1at5fQhJ9L0Ii4R9NLNQ0qiHOYwYFDiQcF" crossorigin="anonymous"></script>
 </head>
 <body>
 <header class="dads-header">
@@ -50,7 +50,7 @@
                     <td>
                         <div class="dads-table-actions">
                             <a th:href="@{/users/edit/{id}(id=${user.id})}" class="dads-btn dads-btn--secondary dads-btn--small">編集</a>
-                            <form th:action="@{/api/users/{id}(id=${user.id})}" method="post" style="margin: 0;">
+                            <form th:action="@{/api/users/{id}(id=${user.id})}" method="post" class="dads-form-delete">
                                 <input type="hidden" name="_csrf" th:if="${_csrf}" th:value="${_csrf.token}"/>
                                 <input type="hidden" name="_method" value="DELETE"/>
                                 <button type="submit" class="dads-btn dads-btn--danger dads-btn--small" onclick="return confirm('本当に削除しますか？')">削除</button>

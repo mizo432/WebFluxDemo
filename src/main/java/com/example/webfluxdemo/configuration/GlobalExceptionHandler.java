@@ -1,5 +1,7 @@
 package com.example.webfluxdemo.configuration;
 
+import com.example.webfluxdemo.handler.ValidationException;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -23,9 +25,21 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<Map<String, String>> handleResponseStatus(ResponseStatusException ex) {
-        Map<String, String> error = new HashMap<>();
+    public ResponseEntity<Map<String, Object>> handleResponseStatus(ResponseStatusException ex) {
+        Map<String, Object> error = new HashMap<>();
         error.put("message", ex.getReason());
+        if (ex.getCause() instanceof ValidationException validationEx) {
+            error.put("errors", validationEx.getErrors());
+        }
         return ResponseEntity.status(ex.getStatusCode()).body(error);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, String>> handleConstraintViolation(ConstraintViolationException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getConstraintViolations().forEach(violation ->
+                errors.put(violation.getPropertyPath().toString(), violation.getMessage())
+        );
+        return ResponseEntity.badRequest().body(errors);
     }
 }

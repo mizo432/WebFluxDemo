@@ -108,22 +108,48 @@ cp .env.sample .env
 DB_NAME=webfluxdb
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
+
+# セキュリティ設定（デフォルト: user/user）
+SECURITY_USERNAME=user
+SECURITY_PASSWORD=user
+
+# Webページ認証有効化（デフォルト: false = 公開）
+SECURITY_WEB_AUTH=false
 ```
 
-環境変数を設定しない場合は、`application.yml` に定義されたデフォルト値（`postgres`）が使用されます。
+環境変数を設定しない場合は、`application.yml` に定義されたデフォルト値が使用されます。
 
 ## セキュリティ
 
 Spring Security が導入されており、API エンドポイント（`/api/**`、`/router/api/**`）は HTTP Basic 認証で保護されています。
 
-- ユーザー名: `user`
-- パスワード: `user`
+- ユーザー名: `user`（環境変数 `SECURITY_USERNAME` で変更可能）
+- パスワード: `user`（環境変数 `SECURITY_PASSWORD` で変更可能）
 
-Web ページ（`/users/**`、`/router/users/**`）はデモ用に公開されています。
+Web ページ（`/users/**`、`/router/users/**`）はデモ用に公開されています。`SECURITY_WEB_AUTH=true` を設定すると、Web ページも認証が必要になります。
 
 ### CSRF 保護
 
-CSRF（クロスサイトリクエストフォージェリ）保護が有効化されています。すべての Web フォームに CSRF トークンが埋め込まれており、不正なリクエストから保護されます。
+CSRF（クロスサイトリクエストフォージェリ）保護について：
+
+- API エンドポイントはステートレスな HTTP Basic 認証を使用するため、CSRF 保護は不要で無効化されています
+- Web フォームには Thymeleaf Security Dialect を介して CSRF トークンが埋め込まれており、防御的な対策として機能します
+- `CookieServerCsrfTokenRepository` が設定されており、トークンは Cookie に格納されます
+
+### 入力検証
+
+すべてのエンドポイントで入力検証が行われています。
+
+- **REST API**: Bean Validation（`@Valid`）と `@RestControllerAdvice`（`GlobalExceptionHandler`）で検証エラーを JSON で返します
+- **RouterFunction API**: `UserHandler` で手動検証を行い、検証エラーを JSON で返します
+- **Web フォーム**: `BindingResult` で検証エラーをキャッチし、エラーメッセージをフォームに表示します
+
+### ページパラメータのバリデーション
+
+ページングパラメータ（`page`、`size`）には以下の制限があります：
+
+- `page`: 0 以上（負の値は 0 に補正）
+- `size`: 1〜100（デフォルト 10、100 超は 100 に補正）
 
 ### API 検証エラーハンドリング
 
@@ -213,7 +239,7 @@ RouterFunction の一覧ページ（`/router/users`）でも同様のページ�
 ユーザー一覧ページには htmx を使用した自動リフレッシュ機能が実装されています。10秒ごとにテーブルとページネーションをサーバーから最新のデータで更新します。
 
 - **htmx** は JavaScript の最小限の使用で、HTML を HTTP 経由で動的に読み込むライブラリです
-- CDN（`https://unpkg.com/htmx.org@2.0.4`）から読み込んでいます
+- CDN（`https://unpkg.com/htmx.org@2.0.4`）から読み込んでおり、SRI（Subresource Integrity）で改ざん防止しています
 - テーブル上部に「⟳ 自動更新中」インジケーターが表示され、緑色の点滅アニメーションで更新間隔を視覚的に示します
 - リクエスト中はインジケーターが回転アニメーションに切り替わります
 - ページネーションでページを切り替えても、htmx は新しいページに対応した URL を自動的に追跡して更新し続けます

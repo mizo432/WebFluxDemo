@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.webflux.error.ErrorAttributes;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.result.view.ViewResolver;
@@ -27,11 +28,14 @@ public class CustomErrorController {
     }
 
     @RequestMapping(value = "/error", produces = "text/html")
-    public Mono<String> handleError(ServerRequest request) {
+    public Mono<String> handleError(ServerRequest request, Model model) {
         Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
         
         // 開発環境でのみ詳細情報を表示
         attributes.put("env", activeProfile);
+        
+        // attributes をテンプレートに渡す
+        attributes.forEach(model::addAttribute);
         
         return Mono.just("error");
     }

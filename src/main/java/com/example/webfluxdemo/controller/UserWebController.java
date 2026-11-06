@@ -24,6 +24,7 @@ public class UserWebController {
     private final UserRepository userRepository;
 
     private static final int DEFAULT_PAGE_SIZE = 10;
+    private static final int MAX_PAGE_SIZE = 100;
 
     public UserWebController(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -33,20 +34,22 @@ public class UserWebController {
     public Mono<String> listUsers(@RequestParam(defaultValue = "0") int page,
                                   @RequestParam(defaultValue = "" + DEFAULT_PAGE_SIZE) int size,
                                   Model model) {
-        int skip = page * size;
+        int safePage = Math.max(0, page);
+        int safeSize = Math.min(MAX_PAGE_SIZE, Math.max(1, size));
+        int skip = safePage * safeSize;
         Mono<Long> totalMono = userRepository.countAll();
-        Flux<User> usersFlux = userRepository.findAll().skip(skip).take(size);
+        Flux<User> usersFlux = userRepository.findAll().skip(skip).take(safeSize);
 
         return totalMono.flatMap(total -> {
-            int totalPages = (int) Math.ceil((double) total / size);
+            int totalPages = (int) Math.ceil((double) total / safeSize);
             return usersFlux.collectList().map(users -> {
                 model.addAttribute("users", users);
-                model.addAttribute("currentPage", page);
-                model.addAttribute("pageSize", size);
+                model.addAttribute("currentPage", safePage);
+                model.addAttribute("pageSize", safeSize);
                 model.addAttribute("totalPages", totalPages);
                 model.addAttribute("totalElements", total);
-                model.addAttribute("hasPrevious", page > 0);
-                model.addAttribute("hasNext", page + 1 < totalPages);
+                model.addAttribute("hasPrevious", safePage > 0);
+                model.addAttribute("hasNext", safePage + 1 < totalPages);
                 return "users";
             });
         });
@@ -57,20 +60,22 @@ public class UserWebController {
     public Mono<String> listUsersFragment(@RequestParam(defaultValue = "0") int page,
                                           @RequestParam(defaultValue = "" + DEFAULT_PAGE_SIZE) int size,
                                           Model model) {
-        int skip = page * size;
+        int safePage = Math.max(0, page);
+        int safeSize = Math.min(MAX_PAGE_SIZE, Math.max(1, size));
+        int skip = safePage * safeSize;
         Mono<Long> totalMono = userRepository.countAll();
-        Flux<User> usersFlux = userRepository.findAll().skip(skip).take(size);
+        Flux<User> usersFlux = userRepository.findAll().skip(skip).take(safeSize);
 
         return totalMono.flatMap(total -> {
-            int totalPages = (int) Math.ceil((double) total / size);
+            int totalPages = (int) Math.ceil((double) total / safeSize);
             return usersFlux.collectList().map(users -> {
                 model.addAttribute("users", users);
-                model.addAttribute("currentPage", page);
-                model.addAttribute("pageSize", size);
+                model.addAttribute("currentPage", safePage);
+                model.addAttribute("pageSize", safeSize);
                 model.addAttribute("totalPages", totalPages);
                 model.addAttribute("totalElements", total);
-                model.addAttribute("hasPrevious", page > 0);
-                model.addAttribute("hasNext", page + 1 < totalPages);
+                model.addAttribute("hasPrevious", safePage > 0);
+                model.addAttribute("hasNext", safePage + 1 < totalPages);
                 return "users-table-fragment";
             });
         });

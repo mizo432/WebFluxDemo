@@ -413,3 +413,8 @@
     transform: rotate(360deg);
   }
 }
+
+/* フォーム内の削除ボタン用 */
+.dads-form-delete {
+  margin: 0;
+}
