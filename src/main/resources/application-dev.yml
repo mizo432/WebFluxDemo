@@ -1,0 +1,10 @@
+# 開発環境用設定
+spring:
+  devtools:
+    restart:
+      enabled: true
+
+logging:
+  level:
+    org.springframework.r2dbc: DEBUG
+    io.r2dbc: DEBUG

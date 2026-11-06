@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="ja">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6" lang="ja">
 <head>
     <meta charset="UTF-8"/>
     <title>エラーが発生しました</title>
@@ -14,34 +14,35 @@
 </header>
 
 <main class="dads-l-container dads-main">
-    <div class="dads-card" style="max-width: 600px; margin: 0 auto;">
-        <div style="text-align: center;">
-            <div style="font-size: 64px; margin-bottom: 16px;">⚠️</div>
-            <h1 class="dads-u-std-25B-130" style="margin-bottom: 8px;">エラーが発生しました</h1>
-            <p class="dads-u-std-17N-170" style="margin-bottom: 24px;" th:text="${error} ?: '予期せぬエラーが発生しました。'">エラーメッセージ</p>
+    <div class="dads-card">
+        <div class="dads-error-page">
+            <div class="dads-error-icon" role="img" aria-label="警告">⚠️</div>
+            <h1 class="dads-u-std-25B-130 dads-error-title">エラーが発生しました</h1>
+            <p class="dads-u-std-17N-170 dads-error-message" th:text="${error} ?: '予期せぬエラーが発生しました。'">エラーメッセージ</p>
 
-            <div style="background-color: var(--color-neutral-solid-gray-100); padding: 16px; border-radius: 4px; margin-bottom: 24px; text-align: left;">
-                <p class="dads-u-std-14N-150" style="margin: 0 0 8px 0;">
+            <!-- 開発環境でのみ詳細情報を表示 -->
+            <div th:if="${env == 'dev'}" class="dads-error-details">
+                <p class="dads-u-std-14N-150">
                     <strong>ステータスコード:</strong>
                     <span th:text="${status} ?: '不明'">404</span>
                 </p>
-                <p class="dads-u-std-14N-150" style="margin: 0 0 8px 0;">
+                <p class="dads-u-std-14N-150">
                     <strong>時刻:</strong>
                     <span th:text="${timestamp} ?: ''">2026-11-06</span>
                 </p>
-                <p class="dads-u-std-14N-150" style="margin: 0 0 8px 0;" th:if="${path}">
+                <p class="dads-u-std-14N-150" th:if="${path}">
                     <strong>パス:</strong>
                     <span th:text="${path}">/path</span>
                 </p>
-                <p class="dads-u-std-14N-150" style="margin: 0;" th:if="${message}">
+                <p class="dads-u-std-14N-150" th:if="${message}">
                     <strong>メッセージ:</strong>
                     <span th:text="${message}">メッセージ</span>
                 </p>
             </div>
 
-            <div class="dads-actions" style="justify-content: center;">
+            <div class="dads-actions dads-actions--center">
                 <a href="/" class="dads-btn dads-btn--primary">トップページに戻る</a>
-                <a href="javascript:history.back()" class="dads-btn dads-btn--secondary">前のページに戻る</a>
+                <button type="button" class="dads-btn dads-btn--secondary" onclick="history.back()">前のページに戻る</button>
             </div>
         </div>
     </div>

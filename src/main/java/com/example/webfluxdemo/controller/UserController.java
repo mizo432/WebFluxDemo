@@ -2,6 +2,7 @@ package com.example.webfluxdemo.controller;
 
 import com.example.webfluxdemo.model.User;
 import com.example.webfluxdemo.repository.UserRepository;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,12 +30,12 @@ public class UserController {
     }
 
     @PostMapping
-    public Mono<User> createUser(@RequestBody Mono<User> user) {
+    public Mono<User> createUser(@Valid @RequestBody Mono<User> user) {
         return user.flatMap(userRepository::save);
     }
 
     @PutMapping("/{id}")
-    public Mono<User> updateUser(@PathVariable Long id, @RequestBody Mono<User> user) {
+    public Mono<User> updateUser(@PathVariable Long id, @Valid @RequestBody Mono<User> user) {
         return user.map(u -> {
             u.setId(id);
             return u;

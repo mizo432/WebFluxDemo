@@ -14,7 +14,7 @@ public class FlywayConfiguration {
     @Value("${spring.flyway.user}")
     private String user;
 
-    @Value("${spring.flyway.password}")
+    @Value("${spring.flyway.password:}")
     private String password;
 
     @Bean(initMethod = "migrate")

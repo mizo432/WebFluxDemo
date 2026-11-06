@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="ja">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6" lang="ja">
 <head>
     <meta charset="UTF-8"/>
     <title>ユーザー一覧（RouterFunction）</title>
     <link rel="stylesheet" href="/css/dads-global.css"/>
     <link rel="stylesheet" href="/css/dads-components.css"/>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
 </head>
 <body>
 <header class="dads-header">
@@ -19,37 +20,74 @@
         <a href="/router/users/new" class="dads-btn dads-btn--primary">ユーザーを追加</a>
     </div>
 
-    <div th:if="${users.empty}" class="dads-empty">
-        <p class="dads-u-std-17N-170">ユーザーがいません。</p>
-    </div>
+    <!-- htmx 自動リフレッシュ対象 -->
+    <div id="router-users-table"
+         th:attr="hx-get=@{/router/users/table-fragment(page=${currentPage}, size=${pageSize})},
+                  hx-trigger='every 10s',
+                  hx-swap='outerHTML'"
+         class="dads-htmx-refresh">
+        <span class="dads-refresh-indicator" title="10秒ごとに自動更新">⟳ 自動更新中</span>
 
-    <div th:if="${!users.empty}" class="dads-table-wrapper">
-        <table class="dads-table">
-            <thead>
-            <tr>
-                <th class="dads-u-std-17B-150">ID</th>
-                <th class="dads-u-std-17B-150">名前</th>
-                <th class="dads-u-std-17B-150">メール</th>
-                <th class="dads-u-std-17B-150">操作</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="user : ${users}">
-                <td class="dads-u-std-17N-150" th:text="${user.id}"></td>
-                <td class="dads-u-std-17N-150" th:text="${user.name}"></td>
-                <td class="dads-u-std-17N-150" th:text="${user.email}"></td>
-                <td>
-                    <div style="display: flex; gap: 8px;">
-                        <a th:href="'/router/users/edit/' + ${user.id}" class="dads-btn dads-btn--secondary dads-btn--small">編集</a>
-                        <form action="/router/users/delete" method="post" style="margin: 0;">
-                            <input type="hidden" name="id" th:value="${user.id}"/>
-                            <button type="submit" class="dads-btn dads-btn--danger dads-btn--small" onclick="return confirm('本当に削除しますか？')">削除</button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+        <div th:if="${users.empty}" class="dads-empty">
+            <p class="dads-u-std-17N-170">ユーザーがいません。</p>
+        </div>
+
+        <div th:if="${!users.empty}" class="dads-table-wrapper">
+            <table class="dads-table">
+                <thead>
+                <tr>
+                    <th class="dads-u-std-17B-150">ID</th>
+                    <th class="dads-u-std-17B-150">名前</th>
+                    <th class="dads-u-std-17B-150">メール</th>
+                    <th class="dads-u-std-17B-150">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user : ${users}">
+                    <td class="dads-u-std-17N-150" th:text="${user.id}"></td>
+                    <td class="dads-u-std-17N-150" th:text="${user.name}"></td>
+                    <td class="dads-u-std-17N-150" th:text="${user.email}"></td>
+                    <td>
+                        <div class="dads-table-actions">
+                            <a th:href="'/router/users/edit/' + ${user.id}" class="dads-btn dads-btn--secondary dads-btn--small">編集</a>
+                            <form action="/router/users/delete" method="post" style="margin: 0;">
+                                <input type="hidden" name="_csrf" th:if="${_csrf}" th:value="${_csrf.token}"/>
+                                <input type="hidden" name="id" th:value="${user.id}"/>
+                                <button type="submit" class="dads-btn dads-btn--danger dads-btn--small" onclick="return confirm('本当に削除しますか？')">削除</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ページネーション -->
+        <div th:if="${!users.empty}" class="dads-pagination">
+            <span class="dads-pagination-info">
+                <span th:text="${totalElements}">0</span>件中、<span th:text="${(currentPage + 1) * pageSize - pageSize + 1}">1</span>〜<span th:text="${currentPage + 1 >= totalPages ? totalElements : (currentPage + 1) * pageSize}">10</span>件表示
+            </span>
+            <div class="dads-pagination-links">
+                <a th:if="${hasPrevious}" th:href="'/router/users?page=' + ${currentPage - 1} + '&size=' + ${pageSize}" class="dads-pagination-btn">« 前へ</a>
+                <span th:if="${!hasPrevious}" class="dads-pagination-btn dads-pagination-btn--disabled">« 前へ</span>
+
+                <th:block th:with="startPage=${currentPage > 2 ? currentPage - 2 : 0}, endPage=${currentPage + 2 >= totalPages ? totalPages - 1 : currentPage + 2}">
+                    <a th:if="${startPage > 0}" th:href="'/router/users?page=0&size=' + ${pageSize}" class="dads-pagination-btn">1</a>
+                    <span th:if="${startPage > 1}" class="dads-pagination-ellipsis">...</span>
+
+                    <th:block th:each="i : ${#numbers.sequence(startPage, endPage)}">
+                        <a th:if="${i != currentPage}" th:href="'/router/users?page=' + ${i} + '&size=' + ${pageSize}" th:text="${i + 1}" class="dads-pagination-btn"></a>
+                        <span th:if="${i == currentPage}" th:text="${i + 1}" class="dads-pagination-btn dads-pagination-btn--active"></span>
+                    </th:block>
+
+                    <span th:if="${endPage < totalPages - 2}" class="dads-pagination-ellipsis">...</span>
+                    <a th:if="${endPage < totalPages - 1}" th:href="'/router/users?page=' + ${totalPages - 1} + '&size=' + ${pageSize}" th:text="${totalPages}" class="dads-pagination-btn"></a>
+                </th:block>
+
+                <a th:if="${hasNext}" th:href="'/router/users?page=' + ${currentPage + 1} + '&size=' + ${pageSize}" class="dads-pagination-btn">次へ »</a>
+                <span th:if="${!hasNext}" class="dads-pagination-btn dads-pagination-btn--disabled">次へ »</span>
+            </div>
+        </div>
     </div>
 </main>
 

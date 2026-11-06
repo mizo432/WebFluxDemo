@@ -246,3 +246,170 @@
   color: var(--color-neutral-solid-gray-500);
   font-size: calc(14 / 16 * 1rem);
 }
+
+/* エラーページ */
+.dads-error-page {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.dads-error-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.dads-error-title {
+  margin-bottom: 8px;
+}
+
+.dads-error-message {
+  margin-bottom: 24px;
+}
+
+.dads-error-details {
+  background-color: var(--color-neutral-solid-gray-100);
+  padding: 16px;
+  border-radius: 4px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.dads-error-details p {
+  margin: 0 0 8px 0;
+}
+
+.dads-error-details p:last-child {
+  margin-bottom: 0;
+}
+
+.dads-actions--center {
+  justify-content: center;
+}
+
+/* テーブル操作ボタングループ */
+.dads-table-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* フォームタイトル */
+.dads-form-title {
+  margin-bottom: 24px;
+}
+
+/* ページネーション */
+.dads-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+  padding: 16px 0;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.dads-pagination-info {
+  font-size: calc(14 / 16 * 1rem);
+  color: var(--color-neutral-solid-gray-500);
+}
+
+.dads-pagination-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dads-pagination-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 12px;
+  font-size: calc(14 / 16 * 1rem);
+  line-height: 1.5;
+  text-decoration: none;
+  border: 1px solid var(--color-neutral-solid-gray-300);
+  border-radius: 4px;
+  color: var(--color-neutral-solid-gray-900);
+  background-color: var(--color-neutral-white);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.dads-pagination-btn:hover {
+  background-color: var(--color-neutral-solid-gray-100);
+  border-color: var(--color-neutral-solid-gray-500);
+}
+
+.dads-pagination-btn--active {
+  background-color: var(--color-key-500);
+  color: var(--color-neutral-white);
+  border-color: var(--color-key-500);
+  cursor: default;
+}
+
+.dads-pagination-btn--disabled {
+  color: var(--color-neutral-solid-gray-300);
+  cursor: default;
+  border-color: var(--color-neutral-solid-gray-200);
+}
+
+.dads-pagination-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  font-size: calc(14 / 16 * 1rem);
+  color: var(--color-neutral-solid-gray-500);
+}
+
+/* htmx 自動リフレッシュ */
+.dads-htmx-refresh {
+  position: relative;
+}
+
+.dads-refresh-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: calc(12 / 16 * 1rem);
+  color: var(--color-neutral-solid-gray-400);
+  margin-bottom: 8px;
+}
+
+.dads-refresh-indicator::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-positive-500);
+  animation: dads-pulse 2s ease-in-out infinite;
+}
+
+@keyframes dads-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* htmx リクエスト中のインジケーター */
+.htmx-request .dads-refresh-indicator::before {
+  background-color: var(--color-key-500);
+  animation: dads-spin 1s linear infinite;
+}
+
+@keyframes dads-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

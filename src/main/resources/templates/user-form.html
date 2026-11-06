@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="ja">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6" lang="ja">
 <head>
     <meta charset="UTF-8"/>
     <title th:text="${user.id != null} ? 'ユーザーを編集' : 'ユーザーを追加'">ユーザーフォーム</title>
@@ -14,10 +14,11 @@
 </header>
 
 <main class="dads-l-container dads-main">
-    <h1 class="dads-u-std-25B-130" style="margin-bottom: 24px;" th:text="${user.id != null} ? 'ユーザーを編集' : 'ユーザーを追加'">ユーザーフォーム</h1>
+    <h1 class="dads-u-std-25B-130 dads-form-title" th:text="${user.id != null} ? 'ユーザーを編集' : 'ユーザーを追加'">ユーザーフォーム</h1>
 
     <div class="dads-card">
         <form th:action="@{/users/submit}" th:object="${user}" method="post">
+            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
             <div class="dads-form-group">
                 <label for="name" class="dads-form-label dads-form-label--required">名前</label>

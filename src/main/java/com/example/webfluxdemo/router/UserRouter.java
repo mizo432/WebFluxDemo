@@ -38,6 +38,7 @@ public class UserRouter {
         return route()
                 .path("/router/users", builder ->
                         builder.GET("", userHandler::listUsers)
+                                .GET("/table-fragment", userHandler::listUsersFragment)
                                 .GET("/new", userHandler::showCreateForm)
                                 .GET("/edit/{id}", userHandler::showEditForm)
                                 .POST("/submit",

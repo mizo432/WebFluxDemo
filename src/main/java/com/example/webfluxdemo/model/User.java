@@ -1,5 +1,8 @@
 package com.example.webfluxdemo.model;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -8,7 +11,14 @@ public class User {
 
     @Id
     private Long id;
+
+    @NotBlank(message = "名前は必須です")
+    @Size(max = 100, message = "名前は100文字以内で指定してください")
     private String name;
+
+    @NotBlank(message = "メールは必須です")
+    @Email(message = "正しいメールアドレスを指定してください")
+    @Size(max = 200, message = "メールは200文字以内で指定してください")
     private String email;
 
     public User() {

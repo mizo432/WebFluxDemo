@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="ja">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6" lang="ja">
 <head>
     <meta charset="UTF-8"/>
     <title>ユーザーフォーム（RouterFunction）</title>
@@ -14,7 +14,7 @@
 </header>
 
 <main class="dads-l-container dads-main">
-    <h1 class="dads-u-std-25B-130" style="margin-bottom: 24px;">
+    <h1 class="dads-u-std-25B-130 dads-form-title">
         <span th:text="${user.id != null} ? 'ユーザーを編集' : 'ユーザーを追加'">ユーザーフォーム</span>
         <span class="dads-badge">RouterFunction</span>
     </h1>
@@ -22,6 +22,7 @@
     <div class="dads-card">
         <form action="/router/users/submit" method="post">
 
+            <input type="hidden" name="_csrf" th:if="${_csrf}" th:value="${_csrf.token}"/>
             <input type="hidden" name="id" th:value="${user.id}"/>
 
             <div class="dads-form-group">
@@ -30,6 +31,7 @@
                        th:value="${user.name}"
                        class="dads-form-input"
                        required placeholder="名前を入力してください"/>
+                <p class="dads-form-error" th:if="${nameError}" th:text="${nameError}"></p>
             </div>
 
             <div class="dads-form-group">
@@ -38,6 +40,7 @@
                        th:value="${user.email}"
                        class="dads-form-input"
                        required placeholder="メールを入力してください"/>
+                <p class="dads-form-error" th:if="${emailError}" th:text="${emailError}"></p>
             </div>
 
             <div class="dads-actions dads-actions--right">
