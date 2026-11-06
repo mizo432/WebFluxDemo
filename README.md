@@ -11,6 +11,7 @@ Spring WebFlux、PostgreSQL R2DBC、Gradle を使用したリアクティブ Web
 - **Flyway** - データベースマイグレーション管理
 - **PostgreSQL** - データベース（`r2dbc-postgresql` ドライバー使用）
 - **Gradle 9.8.0** - ビルドツール（Kotlin DSL）
+- **Spring Boot DevTools** - 開発時のホットリロード
 - **Java 25**
 
 ## 前提条件
@@ -35,6 +36,39 @@ docker compose up -d
 ```
 
 アプリケーションは `http://localhost:8080` で起動します。
+
+### DevTools（ホットリロード）
+
+Spring Boot DevTools が開発用依存関係として設定されています。開発中に Java コードや Thymeleaf テンプレートを修正すると、アプリケーションが自動的に再起動し、ブラウザのリフレッシュで変更が反映されます。
+
+DevTools は `developmentOnly` スコープで追加されているため、本番環境では自動的に無効化されます。
+
+### Java 25 の Netty 警告について
+
+Java 25 でアプリケーションを起動すると、以下のような WARNING が出力されることがあります。
+
+```
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::loadLibrary has been called by io.netty.util.internal.NativeLibraryUtil
+```
+
+これは Java 25 で導入されたネイティブアクセス制限による警告です。`build.gradle.kts` の `bootRun` タスクに `--enable-native-access=ALL-UNNAMED` JVM オプションが設定されており、この警告は抑制されています。
+
+JAR ファイルとして実行する場合は、以下のようにオプションを指定してください。
+
+```bash
+java --enable-native-access=ALL-UNNAMED -jar build/libs/WebFluxDemo-0.0.1-SNAPSHOT.jar
+```
+
+### macOS DNS 解決について
+
+macOS で Netty を使用すると、以下のような ERROR ログが出力されることがあります。
+
+```
+Unable to load io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider, fallback to system defaults.
+```
+
+これは Netty の macOS 用 DNS ネイティブライブラリが不足しているためです。`build.gradle.kts` に `netty-resolver-dns-native-macos` 依存関係が追加されており、Apple Silicon（ARM64）環境で正しい DNS 解決が行われるようにしています。
 
 ## データベースの停止
 
