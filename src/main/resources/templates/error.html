@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ja">
+<head>
+    <meta charset="UTF-8"/>
+    <title>エラーが発生しました</title>
+    <link rel="stylesheet" href="/css/dads-global.css"/>
+    <link rel="stylesheet" href="/css/dads-components.css"/>
+</head>
+<body>
+<header class="dads-header">
+    <div class="dads-header__inner">
+        <h1 class="dads-header__title dads-u-dsp-03B-130">ユーザー管理</h1>
+    </div>
+</header>
+
+<main class="dads-l-container dads-main">
+    <div class="dads-card" style="max-width: 600px; margin: 0 auto;">
+        <div style="text-align: center;">
+            <div style="font-size: 64px; margin-bottom: 16px;">⚠️</div>
+            <h1 class="dads-u-std-25B-130" style="margin-bottom: 8px;">エラーが発生しました</h1>
+            <p class="dads-u-std-17N-170" style="margin-bottom: 24px;" th:text="${error} ?: '予期せぬエラーが発生しました。'">エラーメッセージ</p>
+
+            <div style="background-color: var(--color-neutral-solid-gray-100); padding: 16px; border-radius: 4px; margin-bottom: 24px; text-align: left;">
+                <p class="dads-u-std-14N-150" style="margin: 0 0 8px 0;">
+                    <strong>ステータスコード:</strong>
+                    <span th:text="${status} ?: '不明'">404</span>
+                </p>
+                <p class="dads-u-std-14N-150" style="margin: 0 0 8px 0;">
+                    <strong>時刻:</strong>
+                    <span th:text="${timestamp} ?: ''">2026-11-06</span>
+                </p>
+                <p class="dads-u-std-14N-150" style="margin: 0 0 8px 0;" th:if="${path}">
+                    <strong>パス:</strong>
+                    <span th:text="${path}">/path</span>
+                </p>
+                <p class="dads-u-std-14N-150" style="margin: 0;" th:if="${message}">
+                    <strong>メッセージ:</strong>
+                    <span th:text="${message}">メッセージ</span>
+                </p>
+            </div>
+
+            <div class="dads-actions" style="justify-content: center;">
+                <a href="/" class="dads-btn dads-btn--primary">トップページに戻る</a>
+                <a href="javascript:history.back()" class="dads-btn dads-btn--secondary">前のページに戻る</a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="dads-footer">
+    <p class="dads-u-std-14N-150">WebFluxDemo - デジタル庁デザインシステム</p>
+</footer>
+</body>
+</html>
