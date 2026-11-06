@@ -1,3 +1,6 @@
+# =====================
+#  Gradle
+# =====================
 .gradle
 **/build/
 !**/src/**/build/
@@ -14,8 +17,58 @@ gradle-app.setting
 # Cache of project
 .gradletasknamecache
 
+# =====================
+#  IDE
+# =====================
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
 # Eclipse Gradle plugin generated files
 # Eclipse Core
 .project
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
+.settings/
+
+# VS Code
+.vscode/
+
+# =====================
+#  OS
+# =====================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# =====================
+#  Compiled
+# =====================
+*.class
+*.jar
+*.war
+*.ear
+
+# =====================
+#  Docker Compose
+# =====================
+.env
+
+# =====================
+#  Logs
+# =====================
+*.log
+logs/
+
+# =====================
+#  Spring Boot
+# =====================
+application-local.yml
+application-*.local.yml

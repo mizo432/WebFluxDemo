@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: WebFluxDemo
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/webfluxdb
+    username: postgres
+    password: postgres
+  data:
+    r2dbc:
+      repositories:
+        enabled: true
+  flyway:
+    url: jdbc:postgresql://localhost:5432/webfluxdb
+    user: postgres
+    password: postgres
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+
+logging:
+  level:
+    org.springframework.r2dbc: DEBUG
+    io.r2dbc: DEBUG
